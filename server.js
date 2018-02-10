@@ -1,15 +1,29 @@
-var express = require('express')
-var app = express();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-app.use(express.static(__dirname + '/public'));
+ 
 
-io.on('connect', function(socket){
-	console.log('a user connected');
-	
-	socket.emit('connected', 'are you kidding me?');
+var app = require('http').createServer(handler)
+var io = require('socket.io')(app);
+var fs = require('fs');
+
+app.listen(3333, function(){
+	console.log('start listen...')
 });
 
-http.listen(3333, function() {
-	console.log('server listenning on :3333');
+function handler (req, res) {
+  fs.readFile(__dirname + '/index.html',  function (err, data) {
+    if (err) {
+      res.writeHead(500);
+      return res.end('Error loading index.html');
+    }
+
+    res.writeHead(200);
+    res.end(data);
+  });
+}
+
+io.on('connection', function (socket) {
+	console.log('a user connected');
+	socket.emit('connected', 'are you kidding me?');
+	socket.on('myotherevent', function (data) {
+	console.log(data);
+	});
 });
